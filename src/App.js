@@ -77,7 +77,7 @@ const App = () => {
             </>
         }
         <Route path="/forgotpass" element={<ForgotPassPage />} />
-        <Route path="/newpass" element={<NewPassPage />} />
+        <Route path="/resetpass/:token" element={<NewPassPage />} />
         <Route path="*" element={<NotFoundPage />} />
         {/* <Route path="/stylepage" element={<StylePage/>}/> */}
       </Routes>

@@ -12,14 +12,17 @@ import {
     ModalHeader,
     ModalBody,
 } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
 
 const ForgotPassPage = (props) => {
     const [userData, setUserData] = React.useState([]);
     const [inputForgot, setInputForgot] = React.useState("");
     const [displayText, setDisplayText] = React.useState(false);
     const [toggleOpen, setToggleOpen] = React.useState(false);
+    const [toggleSpinner, setToggleSpinner] = React.useState(false);
 
     const navigate = useNavigate();
+    const toast = useToast();
 
     React.useEffect(() => {
         getData();
@@ -35,34 +38,73 @@ const ForgotPassPage = (props) => {
         }
     };
 
-    const search = async () => {
-        try {
-            if (userData.length > 0){
-                
-                let check = userData.map((val, idx) => {
-                    if (val.username == inputForgot || val.email == inputForgot){
-                       return true;
-                    } else {
-                        return false;
-                    }
-                })
+    const validateEmail = (email) => {
+        return email.match(
+            /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
 
-                if (check == true || inputForgot == ""){
+    const search = () => {
+        try {
+            if (userData.length > 0) {
+                let input = {};
+                let search = "";
+                if (inputForgot.includes("@") || inputForgot.includes(".com")) {
+                    if (validateEmail(inputForgot)) {
+                        search = inputForgot;
+                        input = {email: inputForgot}
+                    } else {
+                        toast({
+                            description: "Input a Valid Email",
+                            status: "error",
+                            duration: 3000,
+                            isClosable: true,
+                            position: "top-right"
+                        })
+                    }
+                } else if (inputForgot != "") {
+                    search = inputForgot;
+                    input = {username: inputForgot}
+                }
+                console.log(input);
+                
+                let check = "";
+                userData.forEach((val, idx) => {
+                    if (search === val.username || search === val.email) {
+                        check = "found";
+                    }
+                });
+                console.log(check);
+
+                if (check == "found") {
+                    setToggleSpinner(true);
+
+                    setTimeout(async () => {
+                        let res = await axios.post(API_URL + '/auth/forgot', {...input});
+    
+                        if (res.data.success){
+                            setToggleOpen(true);
+                            setTimeout(() => {
+                                navigate("/login")
+                            }, 5000);
+                        }
+                    }, 3000);
+                } else {
                     setDisplayText(true);
                     setTimeout(() => {
                         setDisplayText(false);
                     }, 5000);
-                } else {
-                    //disini axios ke api
-                    setToggleOpen(true);
-                    setTimeout(() => {
-                        setToggleOpen(false);
-                        //navigate("/login")
-                    }, 5000);
+                    setInputForgot("");
                 }
-
             } else {
-                alert("user not exist");
+                toast({
+                    description: "User Not Exist",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right"
+                });
+                setInputForgot("");
             }
         } catch (error) {
             console.log(error)
@@ -99,7 +141,8 @@ const ForgotPassPage = (props) => {
                                                         <input className="fs-5 p-2 w-100 bg-transparent color-231"
                                                             type="text"
                                                             placeholder="Username or Email"
-                                                            onChange={(e) => setInputForgot(e.target.value)}>
+                                                            onChange={(e) => setInputForgot(e.target.value)}
+                                                            value={inputForgot}>
                                                         </input>
                                                     </div>
                                                 </div>
@@ -112,12 +155,21 @@ const ForgotPassPage = (props) => {
                                     <div className="col-1">{/*BLANK SPACE*/}</div>
                                 </div>
                             </div>
-                            {/*LOGIN BUTTON*/}
+                            {/*RESET BUTTON*/}
                             <div className="row">
                                 <div className="col-2 col-sm-3"></div>
                                 <div className="col-8 col-sm-6">
                                     <button type="button" className="btn btn-color-eee w-100 border-0 rounded-top shadow-lg text-center fs-4"
-                                        style={{ borderRadius: "20px" }} onClick={search}>SEARCH
+                                        style={{ borderRadius: "20px" }} 
+                                        onClick={search}
+                                        >{
+                                            toggleSpinner ?
+                                                <div className="spinner-border" role="status">
+                                                    <span className="visually-hidden">Loading...</span>
+                                                </div>
+                                                :
+                                                <span>RESET</span>
+                                        }
                                     </button>
                                 </div>
                                 <div className="col-2 col-sm-3"></div>

@@ -1,6 +1,5 @@
 import React from "react";
-import { Button, Text, useToast } from '@chakra-ui/react';
-import bg from '../images/bg.jpg';
+import { Button, useToast } from '@chakra-ui/react';
 import Navbar from "../component/navbar";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -131,14 +130,26 @@ const EditProfilePage = (props) => {
     
                 console.log(res.data)
                 if (res.data.success) {
-                    dispatch(loginAction(edit));
-                    toast({
-                        title: "Profile Saved",
-                        position: 'top',
-                        status: "success",
-                        isClosable: true,
-                    });
-                    navigate('/profile');
+                    if (res.data.newPic){
+                        dispatch(loginAction({...edit, user_profileimage: res.data.newPic}));
+                        toast({
+                            title: "Profile Saved",
+                            position: 'top',
+                            status: "success",
+                            isClosable: true,
+                        });
+                        navigate('/profile');
+                    } else {
+                        dispatch(loginAction(edit));
+                        toast({
+                            title: "Profile Saved",
+                            position: 'top',
+                            status: "success",
+                            isClosable: true,
+                        });
+                        navigate('/profile');
+                    }
+                    //console.log({...edit, user_profileimage: res.data.newPic});
                 }
             }
         }
@@ -257,6 +268,7 @@ const EditProfilePage = (props) => {
                                     </div>
                                     <div className="col-10">
                                         <span className="color-231">{email}</span>
+                                        <span className={status === "unverified" ? "color-red" : "color-006"}>{status === "unverified" ? "(Unverified)" : "(Verified)"}</span>
                                     </div>
                                 </div>
                                 <div className="row m-0 w-75 my-2">

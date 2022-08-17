@@ -18,6 +18,7 @@ import placeholder from '../images/userplaceholder.jpg';
 
 const HomePage = (props) => {
     const [allDataPost, setAllDataPost] = React.useState([]);
+    const [countPost, setCountPost] = React.useState([]);
     const [inputPostImage, setInputPostImage] = React.useState("");
     const [inputPostCaption, setInputPostCaption] = React.useState("");
     const [previewPost, setPreviewPost] = React.useState("");
@@ -43,15 +44,23 @@ const HomePage = (props) => {
         getAllPostData();
     }, []);
 
-    const getAllPostData = () => {
-        axios.get(API_URL + "/post")
-            .then(res => {
-                console.log("from post", res.data);
-                //console.log("from post reverse", res.data.reverse())
-                setAllDataPost(res.data.reverse());
-            }).catch(err => {
-                console.log(err)
-            })
+    const getAllPostData = async () => {
+        try {
+            let res = await axios.get(API_URL + "/post")
+            console.log("from post", res.data);
+            //console.log("from post reverse", res.data.reverse())
+            setAllDataPost(res.data.reverse());
+
+            let search = [];
+            res.data.forEach((val, idx) => {
+                if (val.post_user_id === idusers){
+                    search.push(val)
+                }
+            });
+            setCountPost(search);
+        } catch (error) {
+            console.log(error)
+        }
     };
 
     const btnPost = async () => {
@@ -60,7 +69,8 @@ const HomePage = (props) => {
             formPost.append('postdata', JSON.stringify({
                 post_user_id: idusers,
                 post_username: username,
-                post_caption: inputPostCaption
+                post_caption: inputPostCaption,
+                post_user_image: user_profileimage
             }));
             formPost.append('post_image', inputPostImage);
 
@@ -96,7 +106,6 @@ const HomePage = (props) => {
             let res = await axios.delete(API_URL + "/post/delete/" + post_id);
             if (res.data.success) {
                 console.log("item deleted");
-                getAllPostData();
                 toast({
                     position: "top",
                     title: `Post Deleted`,
@@ -104,6 +113,7 @@ const HomePage = (props) => {
                     duration: 5000,
                     isClosable: true
                 });
+                getAllPostData();
                 setSelectedData(null);
                 setToggleDelete(!toggleDelete);
             };
@@ -120,8 +130,11 @@ const HomePage = (props) => {
                         <div className="p-2 d-flex justify-content-between align-items-center">
                             <div className="d-flex align-items-center">
                                 <img className="rounded-circle" src={val.user_profileimage == null || val.user_profileimage == "" ? placeholder : API_URL + val.user_profileimage}
-                                    style={{ height: "35px", width: "35px" }} />
-                                <span className="fw-bold color-231 ms-2">{val.post_username}</span>
+                                    style={{ height: "35px", width: "35px", border: "solid 2px #231f20" }} />
+                                <div className="ms-2 d-flex flex-column">
+                                    <span className="fw-bold color-231">{val.post_username}</span>
+                                    <span className="text-muted" style={{ fontSize: "12px" }}><Moment fromNow>{val.post_created}</Moment></span>
+                                </div>
                             </div>
                             <Menu>
 
@@ -131,6 +144,9 @@ const HomePage = (props) => {
                                 {
                                     status == "verified" ?
                                         <MenuList>
+                                            <MenuItem type="button">
+                                                Share Post
+                                            </MenuItem>
                                             <MenuItem type="button" onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}>
                                                 Post Detail
                                             </MenuItem>
@@ -170,7 +186,8 @@ const HomePage = (props) => {
                         </div>
                     </div>
                     <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
-                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }}
+                            onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)} />
                     </div>
                     <div className="border-2 border-top-0 rounded-bottom">
                         <div className="p-2">
@@ -187,15 +204,12 @@ const HomePage = (props) => {
                             <p className="my-1">
                                 <span className="fw-bold color-231">{val.post_username}</span> {val.post_caption}
                             </p>
-                            <div className="text-start">
-                                <span>Created <Moment fromNow>{val.post_created}</Moment></span>
-                            </div>
                         </div>
                     </div>
                 </div>
             )
         })
-    }
+    };
 
     return (
         <div>
@@ -226,12 +240,6 @@ const HomePage = (props) => {
                                             <span className="col-7 text-start color-231">Profile</span>
                                         </div>
                                     </button>
-                                    <button className="btn btn-color-eee">
-                                        <div className="py-2 row m-0 fs-5">
-                                            <span className="col-5 material-icons align-self-center text-end color-231">favorite</span>
-                                            <span className="col-7 text-start color-231">Liked Post</span>
-                                        </div>
-                                    </button>
                                 </div>
                             </div>
                             <div className="d-flex mt-4">
@@ -246,7 +254,7 @@ const HomePage = (props) => {
                                 <div className="w-75 d-flex flex-column justify-content-center px-2">
                                     <div className="d-flex align-items-center">
                                         <span className="fs-5 fw-bold">{fullname == "" || fullname == null ? username : fullname}</span>
-                                        <span>{status}</span>
+                                        <span className="text-muted" style={{ fontSize: "15px" }}>{status === "unverified" ? "(unverified)" : ""}</span>
                                     </div>
                                     {
                                         fullname == "" || fullname == null ?
@@ -257,7 +265,7 @@ const HomePage = (props) => {
                                             </div>
                                     }
                                     <div className="d-flex justify-content-between">
-                                        <span>0 Post</span>
+                                        <span>{countPost.length} Post</span>
                                         <span>0 Followers</span>
                                         <span>0 Following</span>
                                     </div>
@@ -265,7 +273,6 @@ const HomePage = (props) => {
                             </div>
                         </div>
                         <div className="col-3">{/* blank */}</div>
-
                         {/*Middle*/}
                         <div className="col-6">
                             {
@@ -312,7 +319,7 @@ const HomePage = (props) => {
                             }
                         </div>
                         {/*Right*/}
-                        <div className="col-3 px-3 bg-color-eee">
+                        <div className="col-3 px-3 bg-color-eee" style={allDataPost.length > 0 ? {} : { height: "100vh" }}>
                             <div style={{ position: "fixed", width: "23%" }}>
                                 <div className="mt-2 ">
                                     <div className="d-flex justify-content-between color-231">

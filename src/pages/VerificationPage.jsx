@@ -10,8 +10,8 @@ import { Text } from "@chakra-ui/react";
 
 const VerificationPage = (props) => {
     const { token } = useParams();
-    const [show, setShow] = React.useState("");
     const navigate = useNavigate();
+    const [show, setShow] = React.useState("");
 
     React.useEffect(() => {
         getDataToken();
@@ -32,7 +32,7 @@ const VerificationPage = (props) => {
         } else {
             setShow("failed")
         }
-    }
+    };
 
     const getVerify = async () => {
         try {
@@ -84,7 +84,7 @@ const VerificationPage = (props) => {
                                         localStorage.getItem("activeUser") ?
                                             <button type="button" className="btn btn-color-231 w-100 border-0 rounded-top shadow-lg text-center fs-4"
                                                 style={{ borderRadius: "20px" }}
-                                                onClick={() => { navigate("/home", { replace: true }); window.location.reload(); }}>
+                                                onClick={() => { navigate("/home", { replace: true }); }}>
                                                 HOMEPAGE
                                             </button>
                                             :

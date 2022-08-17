@@ -210,7 +210,7 @@ const LoginPage = (props) => {
                                     <button type="button" className="btn btn-color-eee w-100 border-0 rounded-top shadow-lg text-center fs-4"
                                         style={{ borderRadius: "20px" }}
                                         disabled={inputUser != "" || password != "" ? false : true}
-                                        onClick={() => btnLogin()}>
+                                        onClick={btnLogin}>
                                         {
                                             toggleSpinner ?
                                                 <div className="spinner-border" role="status">

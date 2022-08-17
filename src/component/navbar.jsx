@@ -21,7 +21,7 @@ import { logoutAction } from "../action/userAction";
 import placeholder from '../images/userplaceholder.jpg';
 
 const Navbar = (props) => {
-    
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -66,11 +66,14 @@ const Navbar = (props) => {
                     {
                         username ?
                             <div className="d-flex align-items-center">
-                                <span className="me-2">{fullname}</span>
+                                <div className="me-2 d-flex flex-column">
+                                    <span>{fullname ? fullname : username}</span>
+                                    <span className={status === "unverified" ? "text-muted" : "d-none"} style={{fontSize: "12px"}}>{status === "unverified" ? "(unverified)" : ""}</span>
+                                </div>
                                 <Menu>
                                     <MenuButton>
-                                        <img src={userProfPic == null || userProfPic == "" ? placeholder : API_URL + userProfPic} 
-                                        className="rounded-circle" style={{ border: "solid 3px #231f20", width: "48px"}}/>
+                                        <img src={userProfPic == null || userProfPic == "" ? placeholder : API_URL + userProfPic}
+                                            className="rounded-circle" style={{ border: "solid 3px #231f20", width: "48px", height: "48px" }} />
                                     </MenuButton>
                                     <MenuList>
                                         <div>

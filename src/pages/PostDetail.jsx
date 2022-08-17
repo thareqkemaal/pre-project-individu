@@ -2,11 +2,20 @@ import React from "react";
 import bg from '../images/bg.jpg';
 import Navbar from "../component/navbar";
 import { useSelector } from "react-redux";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../helper";
-import { Button } from "@chakra-ui/react";
 import placeholder from '../images/userplaceholder.jpg';
+import { Button, ButtonGroup, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import {
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter
+} from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
+import Moment from "react-moment";
 
 const PostDetailPage = (props) => {
     // di dalam state ada idpost, post_user_id, post_username, post_image, 
@@ -22,11 +31,15 @@ const PostDetailPage = (props) => {
     const [inputComment, setInputComment] = React.useState("");
     const [inputCaption, setInputCaption] = React.useState("");
     const [showEdit, setShowEdit] = React.useState("");
+    const [toggleDelete, setToggleDelete] = React.useState(false);
+    const [selectedData, setSelectedData] = React.useState(null);
 
     const navigate = useNavigate();
+    const toast = useToast();
 
-    const { username, status, fullname, user_profileimage } = useSelector(({ userReducer }) => {
+    const { idusers, username, status, fullname, user_profileimage } = useSelector(({ userReducer }) => {
         return {
+            idusers: userReducer.idusers,
             username: userReducer.username,
             status: userReducer.status,
             fullname: userReducer.fullname,
@@ -164,10 +177,12 @@ const PostDetailPage = (props) => {
                 <div key={val.idcomment} className="border-bottom p-2">
                     <div className="d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center">
-                            <img className="rounded-circle" src={val.user_profileimage ? API_URL + val.user_profileimage : placeholder} style={{ width: "35px" }} />
-                            <span className="ms-2 fw-bold">{val.comment_username}</span>
+                            <img className="rounded-circle" src={val.user_profileimage ? API_URL + val.user_profileimage : placeholder} style={{ border: "solid 2px #231f20", width: "35px" }} />
+                            <div className="ms-2 d-flex flex-column">
+                                <span className="fw-bold">{val.comment_username}</span>
+                                <span className="text-muted" style={{ fontSize: "12px" }}><Moment fromNow>{val.comment_created}</Moment></span>
+                            </div>
                         </div>
-                        {/* <span className="text-end">delete comment</span> */}
                     </div>
                     <div className="ms-5">
                         <div>{val.comment_content}</div>
@@ -189,7 +204,28 @@ const PostDetailPage = (props) => {
         } catch (error) {
             console.log(error)
         }
-    }
+    };
+
+    const deletePost = async (post_id) => {
+        try {
+            let res = await axios.delete(API_URL + "/post/delete/" + post_id);
+            if (res.data.success) {
+                console.log("item deleted");
+                toast({
+                    position: "top",
+                    title: `Post Deleted`,
+                    status: "warning",
+                    duration: 5000,
+                    isClosable: true
+                });
+                setSelectedData(null);
+                setToggleDelete(!toggleDelete);
+                window.location.reload();
+            };
+        } catch (error) {
+            console.log(error)
+        }
+    };
 
     return (
         <div>
@@ -214,13 +250,68 @@ const PostDetailPage = (props) => {
                         <div className="col-3">{/* blank */}</div>
                         {/* Middle */}
                         <div className="col-6">
-                        <div className="d-flex justify-content-between">
-                            
-                        </div>
+                            <div className=" mt-2 d-flex justify-content-between align-items-center">
+                                <div className="d-flex align-items-center">
+                                    <img className="rounded-circle" src={postDetail.post_user_image == null || postDetail.post_user_image == "" ? placeholder : API_URL + postDetail.post_user_image}
+                                        style={{ height: "35px", width: "35px" }} />
+                                    <div className="ms-2 d-flex flex-column">
+                                        <span className="fw-bold color-231">{postDetail.post_username}</span>
+                                        <span className="text-muted" style={{fontSize: "15px"}}><Moment fromNow>{postDetail.post_created}</Moment></span>
+                                    </div>
+                                </div>
+                                <Menu>
+
+                                    <MenuButton>
+                                        <span className="material-icons">more_vert</span>
+                                    </MenuButton>
+                                    {
+                                        status == "verified" ?
+                                            <MenuList>
+                                                {
+                                                    username == postDetail.post_username &&
+                                                    <MenuItem onClick={() => setShowEdit("show")}>Edit Caption</MenuItem>
+                                                }
+                                                <MenuItem type="button">
+                                                    Share Post
+                                                </MenuItem>
+                                                {
+                                                    idusers == postDetail.post_user_id &&
+                                                    <MenuItem type="button" onClick={() => {
+                                                        setSelectedData(postDetail);
+                                                        setToggleDelete(!toggleDelete)
+                                                    }}>
+                                                        Delete Post
+                                                    </MenuItem>
+
+                                                }
+                                            </MenuList>
+                                            :
+                                            ""
+                                    }
+                                </Menu>
+                                {
+                                    selectedData ?
+                                        <Modal isOpen={toggleDelete} onClose={() => setToggleDelete(!toggleDelete)}>
+                                            <ModalOverlay />
+                                            <ModalContent>
+                                                <ModalHeader>Are you sure to delete this post?</ModalHeader>
+                                                <ModalFooter>
+                                                    <ButtonGroup>
+                                                        <Button type="button" variant="outline" colorScheme="yellow"
+                                                            onClick={() => { setSelectedData(null); setToggleDelete(!toggleDelete) }}>No</Button>
+                                                        <Button type="button" variant="outline" colorScheme="green"
+                                                            onClick={() => deletePost(selectedData.idpost)}>Yes</Button>
+                                                    </ButtonGroup>
+                                                </ModalFooter>
+                                            </ModalContent>
+                                        </Modal>
+                                        : null
+                                }
+                            </div>
                             <div className="border d-flex justify-content-center mt-2">
                                 <img src={API_URL + postDetail.post_image} style={{ maxHeight: "480px" }} />
                             </div>
-                            <div className="my-2 d-flex justify-content-evenly align-items-center">
+                            <div className="mt-2 ps-2 d-flex align-items-center">
                                 {
                                     showBtn == "unlike" ?
                                         <span type="button" className="material-icons" onClick={deleteLike}
@@ -233,29 +324,27 @@ const PostDetailPage = (props) => {
                                             favorite_border
                                         </span>
                                 }
-                                <span className="fw-bold">{postLike.length} Likes</span>
-                                {
-                                    username == postDetail.post_username &&
-                                    <Button onClick={() => setShowEdit("show")}>edit</Button>
-                                }
+                                <span className="fw-bold ms-2">{postLike.length} Likes</span>
                             </div>
-                            <div className="w-100 p-2 mb-2">
+                            <div className="w-100 p-2">
                                 <div>
                                     <span className="fw-bold">{postDetail.post_username} </span>
                                     {postDetail.post_caption}
                                 </div>
                                 {
                                     showEdit == "show" ?
-                                        <div className="w-100 my-2 d-flex align-items-end">
-                                            <textarea type="text" className="form-control w-75"
-                                                placeholder="edit your caption"
-                                                maxLength={300}
-                                                value={inputCaption}
-                                                onChange={(e) => { setCountEditChar(e.target.value.length); setInputCaption(e.target.value) }}
-                                            >
-                                            </textarea>
-                                            <div className="ms-2">
+                                        <div className="w-100 my-2">
+                                            <div className="d-flex">
+                                                <textarea type="text" className="form-control"
+                                                    placeholder="edit your caption"
+                                                    maxLength={300}
+                                                    value={inputCaption}
+                                                    onChange={(e) => { setCountEditChar(e.target.value.length); setInputCaption(e.target.value) }}
+                                                >
+                                                </textarea>
                                                 <div>{countEditChar}/300</div>
+                                            </div>
+                                            <div className="my-2">
                                                 <Button type="button" colorScheme="green" onClick={saveEditBtn}>Save</Button>
                                                 <Button className="ms-2" type="button" colorScheme="red" onClick={() => setShowEdit("")}>Cancel</Button>
                                             </div>
@@ -264,12 +353,12 @@ const PostDetailPage = (props) => {
                                         ""
                                 }
                             </div>
-                            <div className="p-2 d-flex flex-column align-items-start">
-                                <div className="me-3 w-100">Comments</div>
+                            <div className="p-2 d-flex flex-column align-items-start" style={{ borderTop: "solid", borderColor: "#231f20" }} >
+                                <div className="me-3 w-100 fw-bold">{postComment.length} Comments</div>
                                 {status == "unverified" ?
                                     "" :
                                     <div className="w-100 my-2 d-flex align-items-end">
-                                        <textarea type="text" className="form-control w-75"
+                                        <textarea type="text" className="form-control"
                                             placeholder="add your comment here"
                                             onChange={(e) => { setCountChar(e.target.value.length); setInputComment(e.target.value) }}
                                             maxLength={300}
@@ -277,7 +366,7 @@ const PostDetailPage = (props) => {
                                         </textarea>
                                         <div className="ms-2">
                                             <div>{countChar}/300</div>
-                                            <Button type="button" onClick={addComment}>add comment</Button>
+                                            <button type="button" className="btn btn-color-231" onClick={addComment}>comment</button>
                                         </div>
                                     </div>
                                 }

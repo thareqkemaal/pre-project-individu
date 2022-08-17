@@ -3,21 +3,66 @@ import bg from '../images/bg.jpg';
 import check from '../images/check.png';
 import placeholder from '../images/userplaceholder.jpg';
 import Navbar from "../component/navbar";
+import Moment from "react-moment";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../helper";
 import axios from "axios";
-import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay, useDisclosure } from "@chakra-ui/react";
+import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay, ModalFooter } from "@chakra-ui/react";
+import { Button, ButtonGroup, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
 
 const UserProfilePage = (props) => {
 
+    const [ownPost, setOwnPost] = React.useState([]);
+    const [likedPost, setLikedPost] = React.useState([]);
     const [toggleOpen, setToggleOpen] = React.useState(false);
+    const [toggleDelete, setToggleDelete] = React.useState(false);
+    const [selectedData, setSelectedData] = React.useState(null);
+
+    const [showLike, setShowLike] = React.useState("");
 
     const navigate = useNavigate();
-    const { onClose } = useDisclosure();
+    const toast = useToast();
 
-    const { username, status, fullname, user_bio, user_profileimage } = useSelector(({ userReducer }) => {
+    React.useEffect(() => {
+        getOwnPostData();
+        getLikedPostData();
+    }, []);
+
+    const getOwnPostData = async () => {
+        try {
+            let user = localStorage.getItem("activeUser")
+            let res = await axios.get(API_URL + "/post/ownpost", {
+                headers: {
+                    'Authorization': `Bearer ${user}`
+                }
+            });
+            console.log("own post", res.data)
+            setOwnPost(res.data.reverse())
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const getLikedPostData = async () => {
+        try {
+            let user = localStorage.getItem("activeUser")
+            let res = await axios.get(API_URL + "/post/likedpost", {
+                headers: {
+                    'Authorization': `Bearer ${user}`
+                }
+            });
+            console.log("liked post", res.data)
+            setLikedPost(res.data.reverse())
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const { idusers, username, status, fullname, user_bio, user_profileimage } = useSelector(({ userReducer }) => {
         return {
+            idusers: userReducer.idusers,
             username: userReducer.username,
             status: userReducer.status,
             fullname: userReducer.fullname,
@@ -45,6 +90,198 @@ const UserProfilePage = (props) => {
             console.log('ini error ', error);
         }
     };
+
+    const deletePost = async (post_id) => {
+        try {
+            let res = await axios.delete(API_URL + "/post/delete/" + post_id);
+            if (res.data.success) {
+                console.log("item deleted");
+                getOwnPostData();
+                toast({
+                    position: "top",
+                    title: `Post Deleted`,
+                    status: "warning",
+                    duration: 5000,
+                    isClosable: true
+                });
+                setSelectedData(null);
+                setToggleDelete(!toggleDelete);
+                window.location.reload();
+            };
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const printOwnPosts = () => {
+        return ownPost.map((val, idx) => {
+            return (
+                <div key={val.idpost}>
+                    <div className="border-2 border-bottom-0 rounded-top">
+                        <div className="p-2 d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                                <img className="rounded-circle" src={val.post_user_image == null || val.post_user_image == "" ? placeholder : API_URL + val.post_user_image}
+                                    style={{ height: "35px", width: "35px", border: "solid 2px #231f20" }} />
+                                <span className="fw-bold color-231 ms-2">{val.post_username}</span>
+                            </div>
+                            <Menu>
+
+                                <MenuButton>
+                                    <span className="material-icons">more_vert</span>
+                                </MenuButton>
+                                {
+                                    status == "verified" ?
+                                        <MenuList>
+                                            <MenuItem type="button" onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}>
+                                                Post Detail
+                                            </MenuItem>
+                                            {
+                                                idusers == val.post_user_id &&
+                                                <MenuItem type="button" onClick={() => {
+                                                    setSelectedData(val);
+                                                    setToggleDelete(!toggleDelete)
+                                                }}>
+                                                    Delete Post
+                                                </MenuItem>
+
+                                            }
+                                        </MenuList>
+                                        :
+                                        ""
+                                }
+                            </Menu>
+                            {
+                                selectedData ?
+                                    <Modal isOpen={toggleDelete} onClose={() => setToggleDelete(!toggleDelete)}>
+                                        <ModalOverlay />
+                                        <ModalContent>
+                                            <ModalHeader>Are you sure to delete this post?</ModalHeader>
+                                            <ModalFooter>
+                                                <ButtonGroup>
+                                                    <Button type="button" variant="outline" colorScheme="yellow"
+                                                        onClick={() => { setSelectedData(null); setToggleDelete(!toggleDelete) }}>No</Button>
+                                                    <Button type="button" variant="outline" colorScheme="green"
+                                                        onClick={() => deletePost(selectedData.idpost)}>Yes</Button>
+                                                </ButtonGroup>
+                                            </ModalFooter>
+                                        </ModalContent>
+                                    </Modal>
+                                    : null
+                            }
+                        </div>
+                    </div>
+                    <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
+                    </div>
+                    <div className="border-2 border-top-0 rounded-bottom">
+                        <div className="p-2">
+                            <div className="d-flex">
+                                <div className="d-flex align-items-center">
+                                    <span className="material-icons color-231">favorite</span>
+                                    <span className="color-231">{val.like.length} Likes</span>
+                                </div>
+                                <div className="d-flex align-items-center ms-3">
+                                    <span className="material-icons color-231 me-1">comment</span>
+                                    <span className="color-231">{val.comment.length} Comments</span>
+                                </div>
+                            </div>
+                            <p className="my-1">
+                                <span className="fw-bold color-231">{val.post_username}</span> {val.post_caption}
+                            </p>
+                            <div className="text-start">
+                                <span>Created <Moment fromNow>{val.post_created}</Moment></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+        })
+    };
+
+    const printLikedPosts = () => {
+        return likedPost.map((val, idx) => {
+            return (
+                <div key={val.idpost}>
+                    <div className="border-2 border-bottom-0 rounded-top">
+                        <div className="p-2 d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                                <img className="rounded-circle" src={val.post_user_image == null || val.post_user_image == "" ? placeholder : API_URL + val.post_user_image}
+                                    style={{ height: "35px", width: "35px", border: "solid 2px #231f20" }} />
+                                <span className="fw-bold color-231 ms-2">{val.post_username}</span>
+                            </div>
+                            <Menu>
+
+                                <MenuButton>
+                                    <span className="material-icons">more_vert</span>
+                                </MenuButton>
+                                {
+                                    status == "verified" ?
+                                        <MenuList>
+                                            <MenuItem type="button" onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}>
+                                                Post Detail
+                                            </MenuItem>
+                                            {
+                                                idusers == val.post_user_id &&
+                                                <MenuItem type="button" onClick={() => {
+                                                    setSelectedData(val);
+                                                    setToggleDelete(!toggleDelete)
+                                                }}>
+                                                    Delete Post
+                                                </MenuItem>
+
+                                            }
+                                        </MenuList>
+                                        :
+                                        ""
+                                }
+                            </Menu>
+                            {
+                                selectedData ?
+                                    <Modal isOpen={toggleDelete} onClose={() => setToggleDelete(!toggleDelete)}>
+                                        <ModalOverlay />
+                                        <ModalContent>
+                                            <ModalHeader>Are you sure to delete this post?</ModalHeader>
+                                            <ModalFooter>
+                                                <ButtonGroup>
+                                                    <Button type="button" variant="outline" colorScheme="yellow"
+                                                        onClick={() => { setSelectedData(null); setToggleDelete(!toggleDelete) }}>No</Button>
+                                                    <Button type="button" variant="outline" colorScheme="green"
+                                                        onClick={() => deletePost(selectedData.idpost)}>Yes</Button>
+                                                </ButtonGroup>
+                                            </ModalFooter>
+                                        </ModalContent>
+                                    </Modal>
+                                    : null
+                            }
+                        </div>
+                    </div>
+                    <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
+                    </div>
+                    <div className="border-2 border-top-0 rounded-bottom">
+                        <div className="p-2">
+                            <div className="d-flex">
+                                <div className="d-flex align-items-center">
+                                    <span className="material-icons color-231">favorite</span>
+                                    <span className="color-231">{val.like.length} Likes</span>
+                                </div>
+                                <div className="d-flex align-items-center ms-3">
+                                    <span className="material-icons color-231 me-1">comment</span>
+                                    <span className="color-231">{val.comment.length} Comments</span>
+                                </div>
+                            </div>
+                            <p className="my-1">
+                                <span className="fw-bold color-231">{val.post_username}</span> {val.post_caption}
+                            </p>
+                            <div className="text-start">
+                                <span>Created <Moment fromNow>{val.post_created}</Moment></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+        })
+    }
 
     return (
         <div>
@@ -76,19 +313,13 @@ const UserProfilePage = (props) => {
                                                 <span className="col-7 text-start">Profile</span>
                                             </div>
                                         </button>
-                                        <button className="btn btn-color-eee">
-                                            <div className="py-2 row m-0 fs-5">
-                                                <span className="col-5 material-icons align-self-center text-end color-231">favorite</span>
-                                                <span className="col-7 text-start color-231">Liked Post</span>
-                                            </div>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                             <div className="col-3">{/* blank */}</div>
                             {/*Middle*/}
                             <div className="col-6">
-                                <div className="p-2 pb-3" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
+                                <div className="p-2 pb-3 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
                                     <div className="d-flex justify-content-end my-2" style={{ position: "absolute", left: "66%" }}>
                                         {
                                             status == "unverified" ?
@@ -102,9 +333,11 @@ const UserProfilePage = (props) => {
                                     <div className="d-flex justify-content-center p-3">
                                         {
                                             user_profileimage == "" || user_profileimage == null ?
-                                                <img className="rounded-circle p-2" src={placeholder} style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
+                                                <img className="rounded-circle p-2" src={placeholder}
+                                                    style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
                                                 :
-                                                <img className="rounded-circle p-2" src={API_URL + user_profileimage} style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
+                                                <img className="rounded-circle p-2" src={API_URL + user_profileimage}
+                                                    style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
                                         }
                                     </div>
                                     <div className="fw-bold fs-4 text-center">
@@ -112,7 +345,7 @@ const UserProfilePage = (props) => {
                                     </div>
                                     <div className="fs-5 text-center my-2">
                                         <a className="fw-bold ">@{username}</a><br />
-                                        <i>{status}</i>
+                                        <span className="text-muted" style={{fontSize: "15px"}}>{status === "unverified" ? "(unverified)" : ""}</span>
                                     </div>
                                     <div className={status == "unverified" ? "d-flex justify-content-center" : "d-none"}>
                                         <button type="button" className="btn btn-warning" onClick={getVerify}>VERIFY YOUR EMAIL</button>
@@ -132,11 +365,27 @@ const UserProfilePage = (props) => {
                                     </div>
 
                                 </div>
+                                <div className="pb-2 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
+                                    <button className={showLike == "true" ? "w-50 py-2 btn-white color-231" : "w-50 py-2 btn-color-231"} onClick={() => setShowLike("")}>{username} Post</button>
+                                    <button className={showLike == "true" ? "w-50 py-2 btn-color-231" : "w-50 py-2 btn-white color-231"} onClick={() => setShowLike("true")}>Liked Post</button>
+                                </div>
+                                <div>
+                                    {
+                                        showLike == "true" ?
+                                            <div>
+                                                {printLikedPosts()}
+                                            </div>
+                                            :
+                                            <div>
+                                                {printOwnPosts()}
+                                            </div>
+                                    }
+                                </div>
                             </div>
                             {/*Right*/}
-                            <div className="col-3 px-3 bg-color-eee" style={{ height: "100vh" }}>
+                            <div className="col-3 px-3 bg-color-eee" style={ownPost.length > 0 || likedPost.length > 0 ? {} : { height: "100vh" }}>
                                 <div style={{ position: "fixed", width: "23%" }}>
-                                    <div className="mt-2 ">
+                                    <div className="mt-2">
                                         <div className="d-flex justify-content-between color-231">
                                             <span className="text-center fw-bold">Suggestion For You</span>
                                             <span className="text-muted fw-bold">see all</span>
