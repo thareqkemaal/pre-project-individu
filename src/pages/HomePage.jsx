@@ -40,19 +40,20 @@ const HomePage = (props) => {
         };
     });
 
-    let offset = 0;
-
     React.useEffect(() => {
         getAllPostData();
         window.addEventListener("scroll", handleScroll);
         countPostData();
     }, []);
 
+    let offset = 0
+    
     const handleScroll = async (e) => {
         if (
-            window.innerHeight + e.target.documentElement.scrollTop + 1 >=
+            window.innerHeight + e.target.documentElement.scrollTop + 2 >=
             e.target.documentElement.scrollHeight
         ) {
+            offset += 5;
             await getAllPostData();
         }
     };
@@ -64,9 +65,8 @@ const HomePage = (props) => {
             const allPostArr = [];
             res.data.forEach((val) => allPostArr.push(val));
             setAllDataPost((oldData) => [...oldData, ...allPostArr]);
-            offset += 5;
-            console.log("allpost", allPostArr);
 
+            console.log("", (oldData) => [...oldData, ...allPostArr])
         } catch (error) {
             console.log(error)
         }
@@ -331,7 +331,7 @@ const HomePage = (props) => {
                                             </div>
                                         </div>
                                         <div className="row">
-                                            {printPosts().reverse()}
+                                            {printPosts()}
                                         </div>
                                         <div className="text-center py-2">
                                             {

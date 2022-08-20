@@ -184,6 +184,7 @@ const PostDetailPage = (props) => {
 
             if (res.data.success) {
                 getComment();
+                countComments();
                 setInputComment("");
                 setCountChar(0);
             }
@@ -396,7 +397,7 @@ const PostDetailPage = (props) => {
                                     </div>
                                 }
                                 <div className="w-100">
-                                    {printComment().reverse()}
+                                    {printComment()}
                                 </div>
                                 {
                                     postComment.length >= 5 &&
