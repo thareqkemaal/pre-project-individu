@@ -4,10 +4,6 @@
   font-family: 'Signika Negative', sans-serif;
 }
 
-.bg-navbar {
-  background-color: #d8eaee;
-}
-
 input:focus {
   outline: none !important;
 }
@@ -18,13 +14,6 @@ input:focus {
   background-attachment: fixed;
   background-repeat: no-repeat;
   height: 100vh;
-}
-
-.static-home-bg {
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
 }
 
 /* color */
@@ -40,23 +29,6 @@ input:focus {
   color: #006442;
 }
 
-.color-364 {
-  color: #364f6b
-}
-
-.color-bef {
-  color: #befef8
-}
-
-.color-476 {
-  color: #47688d
-}
-
-.color-253 {
-  color: #253649
-}
-
-
 .color-red {
   color: rgb(255, 31, 31);
 }
@@ -66,14 +38,6 @@ input:focus {
 }
 
 /* background color */
-
-.bg-color-253 {
-  background-color: #253649;
-}
-
-.bg-color-476 {
-  background-color: #47688d;
-}
 
 .bg-color-231 {
   background-color: #231f20;
@@ -91,42 +55,6 @@ input:focus {
 .button {
   padding: 10px 13px;
   border-radius: 8%;
-}
-
-.btn-blue-253 {
-  border: 1px solid #253649;
-  color: white;
-  background-color: #253649;
-}
-
-.btn-blue-253:hover {
-  background-color: transparent;
-  border: 1px solid #253649;
-  color: #253649;
-}
-
-.btn-blue-253-outline {
-  border: 1px solid #253649;
-  color: #253649;
-  background-color: transparent;
-}
-
-.btn-blue-253-outline:hover {
-  background-color: #253649;
-  border: 1px solid #253649;
-  color: white;
-}
-
-.btn-blue-476 {
-  border: 1px solid #47688d;
-  color: white;
-  background-color: #47688d;
-}
-
-.btn-blue-476:hover {
-  background-color: #436082;
-  border: 1px solid #47688d;
-  color: white;
 }
 
 .btn-color-eee {
@@ -187,12 +115,7 @@ span:before {
   text-decoration: underline;
 }
 
-
-
-
-
-
-
+/* MISC */
 .App {
   text-align: center;
 }

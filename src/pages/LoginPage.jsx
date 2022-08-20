@@ -97,6 +97,8 @@ const LoginPage = (props) => {
                             console.log("data", res.data);
                             localStorage.setItem("activeUser", res.data.token);
                             delete res.data.token;
+                            delete res.data.verifToken;
+                            delete res.data.passToken;
                             dispatch(loginAction(res.data));
                             navigate("/home", { replace: true });
                             toast({

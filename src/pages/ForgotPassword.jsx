@@ -45,69 +45,67 @@ const ForgotPassPage = (props) => {
     };
 
     const search = () => {
-        try {
-            if (userData.length > 0) {
-                let input = {};
-                let search = "";
-                if (inputForgot.includes("@") || inputForgot.includes(".com")) {
-                    if (validateEmail(inputForgot)) {
-                        search = inputForgot;
-                        input = {email: inputForgot}
-                    } else {
-                        toast({
-                            description: "Input a Valid Email",
-                            status: "error",
-                            duration: 3000,
-                            isClosable: true,
-                            position: "top-right"
-                        })
-                    }
-                } else if (inputForgot != "") {
+        if (userData.length > 0) {
+            let input = {};
+            let search = "";
+            if (inputForgot.includes("@") || inputForgot.includes(".com")) {
+                if (validateEmail(inputForgot)) {
                     search = inputForgot;
-                    input = {username: inputForgot}
-                }
-                console.log(input);
-                
-                let check = "";
-                userData.forEach((val, idx) => {
-                    if (search === val.username || search === val.email) {
-                        check = "found";
-                    }
-                });
-                console.log(check);
-
-                if (check == "found") {
-                    setToggleSpinner(true);
-
-                    setTimeout(async () => {
-                        let res = await axios.post(API_URL + '/auth/forgot', {...input});
-    
-                        if (res.data.success){
-                            setToggleOpen(true);
-                            setTimeout(() => {
-                                navigate("/login")
-                            }, 5000);
-                        }
-                    }, 3000);
+                    input = { email: inputForgot }
                 } else {
-                    setDisplayText(true);
-                    setTimeout(() => {
-                        setDisplayText(false);
-                    }, 5000);
-                    setInputForgot("");
+                    toast({
+                        description: "Input a Valid Email",
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                        position: "top-right"
+                    })
                 }
+            } else if (inputForgot != "") {
+                search = inputForgot;
+                input = { username: inputForgot }
+            }
+            console.log(input);
+
+            let check = "";
+            userData.forEach((val, idx) => {
+                if (search === val.username || search === val.email) {
+                    check = "found";
+                }
+            });
+            console.log(check);
+
+            if (check == "found") {
+                setToggleSpinner(true);
+                console.log(input)
+
+                setTimeout(async () => {
+                    let res = await axios.post(API_URL + '/auth/forgot', input);
+
+                    if (res.data.success) {
+                        setToggleOpen(true);
+                        setTimeout(() => {
+                            navigate("/login")
+                        }, 5000);
+                    }
+                }, 3000)
+
             } else {
-                toast({
-                    description: "User Not Exist",
-                    status: "error",
-                    duration: 3000,
-                    isClosable: true,
-                    position: "top-right"
-                });
+                setDisplayText(true);
+                setTimeout(() => {
+                    setDisplayText(false);
+                }, 5000);
                 setInputForgot("");
             }
-        } catch (error) {
-            console.log(error)
+        } else {
+            toast({
+                description: "User Not Exist",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+                position: "top-right"
+            });
+            setInputForgot("");
         }
     };
 
@@ -160,9 +158,9 @@ const ForgotPassPage = (props) => {
                                 <div className="col-2 col-sm-3"></div>
                                 <div className="col-8 col-sm-6">
                                     <button type="button" className="btn btn-color-eee w-100 border-0 rounded-top shadow-lg text-center fs-4"
-                                        style={{ borderRadius: "20px" }} 
+                                        style={{ borderRadius: "20px" }}
                                         onClick={search}
-                                        >{
+                                    >{
                                             toggleSpinner ?
                                                 <div className="spinner-border" role="status">
                                                     <span className="visually-hidden">Loading...</span>
@@ -177,10 +175,10 @@ const ForgotPassPage = (props) => {
                             <Modal closeOnOverlayClick={false} isOpen={toggleOpen} isCentered>
                                 <ModalOverlay />
                                 <ModalContent>
-                                    <ModalHeader className="text-center fw-bold fs-3 color-253">Thank you for the Registration</ModalHeader>
+                                    <ModalHeader className="text-center fw-bold fs-3 color-231">Thank you for the Registration</ModalHeader>
                                     <ModalBody className="d-flex flex-column align-items-center">
                                         <img src={check} style={{ width: "150px" }} />
-                                        <span className="fw-bold my-3 fs-5 color-253">Please check your email</span>
+                                        <span className="fw-bold my-3 fs-5 color-231">Please check your email</span>
                                     </ModalBody>
                                 </ModalContent>
                             </Modal>

@@ -18,12 +18,12 @@ import placeholder from '../images/userplaceholder.jpg';
 
 const HomePage = (props) => {
     const [allDataPost, setAllDataPost] = React.useState([]);
-    const [countPost, setCountPost] = React.useState([]);
     const [inputPostImage, setInputPostImage] = React.useState("");
     const [inputPostCaption, setInputPostCaption] = React.useState("");
     const [previewPost, setPreviewPost] = React.useState("");
     const [toggleDelete, setToggleDelete] = React.useState(false);
     const [selectedData, setSelectedData] = React.useState(null);
+    const [countData, setCountData] = React.useState([]);
 
     const fileRef = React.useRef();
     const toast = useToast();
@@ -40,24 +40,42 @@ const HomePage = (props) => {
         };
     });
 
+    let offset = 0;
+
     React.useEffect(() => {
         getAllPostData();
+        window.addEventListener("scroll", handleScroll);
+        countPostData();
     }, []);
+
+    const handleScroll = async (e) => {
+        if (
+            window.innerHeight + e.target.documentElement.scrollTop + 1 >=
+            e.target.documentElement.scrollHeight
+        ) {
+            await getAllPostData();
+        }
+    };
 
     const getAllPostData = async () => {
         try {
-            let res = await axios.get(API_URL + "/post")
-            console.log("from post", res.data);
-            //console.log("from post reverse", res.data.reverse())
-            setAllDataPost(res.data.reverse());
+            let res = await axios.get(API_URL + `/post?limit=5&offset=${offset}`);
 
-            let search = [];
-            res.data.forEach((val, idx) => {
-                if (val.post_user_id === idusers){
-                    search.push(val)
-                }
-            });
-            setCountPost(search);
+            const allPostArr = [];
+            res.data.forEach((val) => allPostArr.push(val));
+            setAllDataPost((oldData) => [...oldData, ...allPostArr]);
+            offset += 5;
+            console.log("allpost", allPostArr);
+
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const countPostData = async () => {
+        try {
+            let res = await axios.get(API_URL + `/post/countdata`);
+            setCountData(res.data)
         } catch (error) {
             console.log(error)
         }
@@ -265,7 +283,7 @@ const HomePage = (props) => {
                                             </div>
                                     }
                                     <div className="d-flex justify-content-between">
-                                        <span>{countPost.length} Post</span>
+                                        <span>0 Post</span>
                                         <span>0 Followers</span>
                                         <span>0 Following</span>
                                     </div>
@@ -313,7 +331,15 @@ const HomePage = (props) => {
                                             </div>
                                         </div>
                                         <div className="row">
-                                            {printPosts()}
+                                            {printPosts().reverse()}
+                                        </div>
+                                        <div className="text-center py-2">
+                                            {
+                                                countData.length == allDataPost.length ?
+                                                    <span>Yay you've seen it all</span>
+                                                    :
+                                                    ""
+                                            }
                                         </div>
                                     </>
                             }

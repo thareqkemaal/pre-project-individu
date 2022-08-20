@@ -6,7 +6,6 @@ const NotFoundPage = (props) => {
 
     const navigate = useNavigate();
 
-
     return (
         <div className="static-bg" style={{ backgroundImage: `url(${bg})` }}>
             <div className="container">

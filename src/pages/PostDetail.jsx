@@ -1,7 +1,7 @@
 import React from "react";
 import bg from '../images/bg.jpg';
 import Navbar from "../component/navbar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../helper";
@@ -16,6 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react';
 import Moment from "react-moment";
+import { deleteLiked, likedPost } from "../action/userAction";
 
 const PostDetailPage = (props) => {
     // di dalam state ada idpost, post_user_id, post_username, post_image, 
@@ -25,6 +26,7 @@ const PostDetailPage = (props) => {
     const [postDetail, setPostDetail] = React.useState({});
     const [postLike, setPostLike] = React.useState([]);
     const [postComment, setPostComment] = React.useState([]);
+    const [countComm, setCountComm] = React.useState([]);
     const [showBtn, setShowBtn] = React.useState("");
     const [countChar, setCountChar] = React.useState(0);
     const [countEditChar, setCountEditChar] = React.useState(0);
@@ -33,8 +35,10 @@ const PostDetailPage = (props) => {
     const [showEdit, setShowEdit] = React.useState("");
     const [toggleDelete, setToggleDelete] = React.useState(false);
     const [selectedData, setSelectedData] = React.useState(null);
+    const [offset, setOffset] = React.useState(0);
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const toast = useToast();
 
     const { idusers, username, status, fullname, user_profileimage } = useSelector(({ userReducer }) => {
@@ -52,13 +56,14 @@ const PostDetailPage = (props) => {
         getLike();
         checkLike();
         getComment();
+        countComments();
     }, []);
 
     const getPost = async () => {
         try {
             let res = await axios.get(API_URL + `/post/detail/${id}`)
 
-            console.log(res.data);
+            //console.log(res.data);
             setPostDetail(res.data);
         } catch (error) {
             console.log(error)
@@ -69,7 +74,7 @@ const PostDetailPage = (props) => {
         try {
             let res = await axios.get(API_URL + `/post/like/${id}`);
 
-            console.log(res.data);
+            //console.log(res.data);
             setPostLike(res.data);
         } catch (error) {
             console.log(error)
@@ -86,7 +91,7 @@ const PostDetailPage = (props) => {
                 }
             });
 
-            console.log('sudah di like', res.data)
+            //console.log('sudah di like', res.data)
             if (res.data.idlike) {
                 setShowBtn("unlike")
             } else {
@@ -107,9 +112,11 @@ const PostDetailPage = (props) => {
                 }
             });
 
-            console.log(res.data);
+            //console.log(res.data);
 
             if (res.data.success) {
+                //console.log(res.data.liked)
+                dispatch(likedPost({ liked: res.data.liked }));
                 setShowBtn("unlike");
                 getLike();
             }
@@ -128,9 +135,10 @@ const PostDetailPage = (props) => {
                 }
             });
 
-            console.log(res.data);
+            //console.log(res.data);
 
             if (res.data.success) {
+                dispatch(deleteLiked({ liked: res.data.liked }));
                 setShowBtn("");
                 getLike();
             }
@@ -141,10 +149,23 @@ const PostDetailPage = (props) => {
 
     const getComment = async () => {
         try {
-            let res = await axios.get(API_URL + `/post/comment/${id}`);
+            let res = await axios.get(API_URL + `/post/comment/${id}?limit=5&offset=${offset}`);
 
-            console.log(res.data);
-            setPostComment(res.data.reverse());
+            //console.log(res.data);
+            const newComment = [];
+            res.data.forEach((val) => newComment.push(val))
+            setPostComment((oldData) => [...oldData, ...newComment]);
+            setOffset(offset + 5);
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const countComments = async () => {
+        try {
+            let res = await axios.get(API_URL + `/post/countcomment/${id}`);
+            //console.log("count", res.data);
+            setCountComm(res.data);
         } catch (error) {
             console.log(error)
         }
@@ -190,6 +211,10 @@ const PostDetailPage = (props) => {
                 </div>
             )
         })
+    };
+
+    const handleComment = () => {
+        getComment();
     };
 
     const saveEditBtn = async () => {
@@ -239,9 +264,9 @@ const PostDetailPage = (props) => {
                                 <span className="text-center fs-5 fw-bold">Post Detail</span>
                                 <div className="d-flex flex-column">
                                     <button className="btn btn-color-231 mt-1">
-                                        <div className="py-2 row m-0 fs-5" onClick={() => navigate("/home")}>
+                                        <div className="py-2 row m-0 fs-5" onClick={() => navigate(-1)}>
                                             <span className="col-5 material-icons align-self-center text-end">arrow_back</span>
-                                            <span className="col-7 text-start">Home</span>
+                                            <span className="col-7 text-start">Back</span>
                                         </div>
                                     </button>
                                 </div>
@@ -256,7 +281,7 @@ const PostDetailPage = (props) => {
                                         style={{ height: "35px", width: "35px" }} />
                                     <div className="ms-2 d-flex flex-column">
                                         <span className="fw-bold color-231">{postDetail.post_username}</span>
-                                        <span className="text-muted" style={{fontSize: "15px"}}><Moment fromNow>{postDetail.post_created}</Moment></span>
+                                        <span className="text-muted" style={{ fontSize: "15px" }}><Moment fromNow>{postDetail.post_created}</Moment></span>
                                     </div>
                                 </div>
                                 <Menu>
@@ -354,7 +379,7 @@ const PostDetailPage = (props) => {
                                 }
                             </div>
                             <div className="p-2 d-flex flex-column align-items-start" style={{ borderTop: "solid", borderColor: "#231f20" }} >
-                                <div className="me-3 w-100 fw-bold">{postComment.length} Comments</div>
+                                <div className="me-3 w-100 fw-bold">{countComm.length} Comments</div>
                                 {status == "unverified" ?
                                     "" :
                                     <div className="w-100 my-2 d-flex align-items-end">
@@ -371,8 +396,19 @@ const PostDetailPage = (props) => {
                                     </div>
                                 }
                                 <div className="w-100">
-                                    {printComment()}
+                                    {printComment().reverse()}
                                 </div>
+                                {
+                                    postComment.length >= 5 &&
+                                    <div className="w-100 text-center">
+                                        {
+                                            countComm.length == postComment.length ?
+                                                <span>Yay you've seen it all</span>
+                                                :
+                                                <button onClick={handleComment}>see more</button>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </div>
                         {/*Right*/}

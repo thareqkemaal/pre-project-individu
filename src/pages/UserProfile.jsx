@@ -12,6 +12,7 @@ import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay, ModalFooter 
 import { Button, ButtonGroup, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react';
 
+
 const UserProfilePage = (props) => {
 
     const [ownPost, setOwnPost] = React.useState([]);
@@ -60,14 +61,15 @@ const UserProfilePage = (props) => {
         }
     };
 
-    const { idusers, username, status, fullname, user_bio, user_profileimage } = useSelector(({ userReducer }) => {
+    const { idusers, username, status, fullname, user_bio, user_profileimage, liked } = useSelector(({ userReducer }) => {
         return {
             idusers: userReducer.idusers,
             username: userReducer.username,
             status: userReducer.status,
             fullname: userReducer.fullname,
             user_profileimage: userReducer.user_profileimage,
-            user_bio: userReducer.user_bio
+            user_bio: userReducer.user_bio,
+            liked: userReducer.liked
         };
     });
 
@@ -122,7 +124,10 @@ const UserProfilePage = (props) => {
                             <div className="d-flex align-items-center">
                                 <img className="rounded-circle" src={val.post_user_image == null || val.post_user_image == "" ? placeholder : API_URL + val.post_user_image}
                                     style={{ height: "35px", width: "35px", border: "solid 2px #231f20" }} />
-                                <span className="fw-bold color-231 ms-2">{val.post_username}</span>
+                                <div className="ms-2 d-flex flex-column">
+                                    <span className="fw-bold color-231">{val.post_username}</span>
+                                    <span className="text-muted" style={{ fontSize: "12px" }}><Moment fromNow>{val.post_created}</Moment></span>
+                                </div>
                             </div>
                             <Menu>
 
@@ -171,7 +176,9 @@ const UserProfilePage = (props) => {
                         </div>
                     </div>
                     <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
-                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }}
+                            onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}
+                        />
                     </div>
                     <div className="border-2 border-top-0 rounded-bottom">
                         <div className="p-2">
@@ -188,9 +195,6 @@ const UserProfilePage = (props) => {
                             <p className="my-1">
                                 <span className="fw-bold color-231">{val.post_username}</span> {val.post_caption}
                             </p>
-                            <div className="text-start">
-                                <span>Created <Moment fromNow>{val.post_created}</Moment></span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -207,7 +211,10 @@ const UserProfilePage = (props) => {
                             <div className="d-flex align-items-center">
                                 <img className="rounded-circle" src={val.post_user_image == null || val.post_user_image == "" ? placeholder : API_URL + val.post_user_image}
                                     style={{ height: "35px", width: "35px", border: "solid 2px #231f20" }} />
-                                <span className="fw-bold color-231 ms-2">{val.post_username}</span>
+                                <div className="ms-2 d-flex flex-column">
+                                    <span className="fw-bold color-231">{val.post_username}</span>
+                                    <span className="text-muted" style={{ fontSize: "12px" }}><Moment fromNow>{val.post_created}</Moment></span>
+                                </div>
                             </div>
                             <Menu>
 
@@ -256,7 +263,9 @@ const UserProfilePage = (props) => {
                         </div>
                     </div>
                     <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
-                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }}
+                            onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}
+                        />
                     </div>
                     <div className="border-2 border-top-0 rounded-bottom">
                         <div className="p-2">
@@ -273,15 +282,12 @@ const UserProfilePage = (props) => {
                             <p className="my-1">
                                 <span className="fw-bold color-231">{val.post_username}</span> {val.post_caption}
                             </p>
-                            <div className="text-start">
-                                <span>Created <Moment fromNow>{val.post_created}</Moment></span>
-                            </div>
                         </div>
                     </div>
                 </div>
             )
         })
-    }
+    };
 
     return (
         <div>
@@ -345,17 +351,17 @@ const UserProfilePage = (props) => {
                                     </div>
                                     <div className="fs-5 text-center my-2">
                                         <a className="fw-bold ">@{username}</a><br />
-                                        <span className="text-muted" style={{fontSize: "15px"}}>{status === "unverified" ? "(unverified)" : ""}</span>
+                                        <span className="text-muted" style={{ fontSize: "15px" }}>{status === "unverified" ? "(unverified)" : ""}</span>
                                     </div>
                                     <div className={status == "unverified" ? "d-flex justify-content-center" : "d-none"}>
                                         <button type="button" className="btn btn-warning" onClick={getVerify}>VERIFY YOUR EMAIL</button>
                                         <Modal isOpen={toggleOpen} isCentered>
                                             <ModalOverlay />
                                             <ModalContent>
-                                                <ModalHeader className="text-center fw-bold fs-3 color-253">Verification link has been sent</ModalHeader>
+                                                <ModalHeader className="text-center fw-bold fs-3 color-231">Verification link has been sent</ModalHeader>
                                                 <ModalBody className="d-flex flex-column align-items-center">
                                                     <img src={check} style={{ width: "150px" }} />
-                                                    <span className="fw-bold mt-3 fs-5 color-253">Please check your email</span>
+                                                    <span className="fw-bold mt-3 fs-5 color-231">Please check your email</span>
                                                 </ModalBody>
                                             </ModalContent>
                                         </Modal>
@@ -371,19 +377,22 @@ const UserProfilePage = (props) => {
                                 </div>
                                 <div>
                                     {
-                                        showLike == "true" ?
-                                            <div>
-                                                {printLikedPosts()}
-                                            </div>
+                                        status === "verified" ?
+                                            showLike == "true" ?
+                                                <div>
+                                                    {printLikedPosts()}
+                                                </div>
+                                                :
+                                                <div>
+                                                    {printOwnPosts()}
+                                                </div>
                                             :
-                                            <div>
-                                                {printOwnPosts()}
-                                            </div>
+                                            ""
                                     }
                                 </div>
                             </div>
                             {/*Right*/}
-                            <div className="col-3 px-3 bg-color-eee" style={ownPost.length > 0 || likedPost.length > 0 ? {} : { height: "100vh" }}>
+                            <div className="col-3 px-3 bg-color-eee" style={ownPost.length > 0 || liked.length > 0 ? {} : { height: "100vh" }}>
                                 <div style={{ position: "fixed", width: "23%" }}>
                                     <div className="mt-2">
                                         <div className="d-flex justify-content-between color-231">

@@ -7,11 +7,15 @@ import verif from '../images/verif.png';
 import failed from '../images/failed.png';
 import Footer from "../component/footer";
 import { Text } from "@chakra-ui/react";
+import { useDispatch } from "react-redux";
+import { updateStatus } from "../action/userAction";
 
 const VerificationPage = (props) => {
     const { token } = useParams();
     const navigate = useNavigate();
     const [show, setShow] = React.useState("");
+
+    const dispatch = useDispatch();
 
     React.useEffect(() => {
         getDataToken();
@@ -82,11 +86,23 @@ const VerificationPage = (props) => {
                                 <div className="col-12 col-sm-6 col-lg-6">
                                     {
                                         localStorage.getItem("activeUser") ?
-                                            <button type="button" className="btn btn-color-231 w-100 border-0 rounded-top shadow-lg text-center fs-4"
-                                                style={{ borderRadius: "20px" }}
-                                                onClick={() => { navigate("/home", { replace: true }); }}>
-                                                HOMEPAGE
-                                            </button>
+                                            show === "failed" ?
+                                                <button type="button" className="btn btn-color-231 w-100 border-0 rounded-top shadow-lg text-center fs-4"
+                                                    style={{ borderRadius: "20px" }}
+                                                    onClick={() => {
+                                                        navigate("/home", { replace: true });
+                                                    }}>
+                                                    HOMEPAGE
+                                                </button>
+                                                :
+                                                <button type="button" className="btn btn-color-231 w-100 border-0 rounded-top shadow-lg text-center fs-4"
+                                                    style={{ borderRadius: "20px" }}
+                                                    onClick={() => {
+                                                        dispatch(updateStatus({ status: "verified", user_status: 1, idstatus: 1 }));
+                                                        navigate("/home", { replace: true });
+                                                    }}>
+                                                    HOMEPAGE
+                                                </button>
                                             :
                                             <button type="button" className="btn btn-color-231 w-100 border-0 rounded-top shadow-lg text-center fs-4"
                                                 style={{ borderRadius: "20px" }}

@@ -101,8 +101,8 @@ const Navbar = (props) => {
                             </div>
                             :
                             <div className="btn-group">
-                                <button type="button" className="btn btn-blue-253-outline" onClick={() => navigate("/login")}>Sign In</button>
-                                <button type="button" className="btn btn-blue-253" onClick={() => navigate("/register")}>Sign Up</button>
+                                <button type="button" className="btn btn-color-eee-outline" onClick={() => navigate("/login")}>Sign In</button>
+                                <button type="button" className="btn btn-color-231" onClick={() => navigate("/register")}>Sign Up</button>
                             </div>
                     }
                 </div>
