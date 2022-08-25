@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { API_URL } from "../helper";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Moment from "react-moment";
 import Navbar from "../component/navbar";
@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react';
 import placeholder from '../images/userplaceholder.jpg';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const HomePage = (props) => {
     const [allDataPost, setAllDataPost] = React.useState([]);
@@ -24,6 +25,8 @@ const HomePage = (props) => {
     const [toggleDelete, setToggleDelete] = React.useState(false);
     const [selectedData, setSelectedData] = React.useState(null);
     const [countData, setCountData] = React.useState([]);
+    const [countOwnPost, setCountOwnPost] = React.useState([]);
+    const [offset, setOffset] = React.useState(1);
 
     const fileRef = React.useRef();
     const toast = useToast();
@@ -42,42 +45,56 @@ const HomePage = (props) => {
 
     React.useEffect(() => {
         getAllPostData();
-        window.addEventListener("scroll", handleScroll);
         countPostData();
     }, []);
 
-    let offset = 0
-    
-    const handleScroll = async (e) => {
-        if (
-            window.innerHeight + e.target.documentElement.scrollTop + 2 >=
-            e.target.documentElement.scrollHeight
-        ) {
-            offset += 5;
-            await getAllPostData();
-        }
-    };
-
     const getAllPostData = async () => {
         try {
-            let res = await axios.get(API_URL + `/post?limit=5&offset=${offset}`);
+            let res = await axios.get(API_URL + `/post/5/0`)
 
-            const allPostArr = [];
-            res.data.forEach((val) => allPostArr.push(val));
-            setAllDataPost((oldData) => [...oldData, ...allPostArr]);
-
-            console.log("", (oldData) => [...oldData, ...allPostArr])
+            if (res.data.length > 0) {
+                console.log("get all post data", res.data)
+                setAllDataPost(res.data)
+            }
         } catch (error) {
             console.log(error)
         }
     };
+
+    const moreData = async () => {
+        try {
+            console.log(offset)
+            let res = await axios.get(API_URL + `/post/more/5/${offset * 5}`)
+
+            if (res.data.length > 0) {
+                console.log(res.data)
+                let newData = [];
+                res.data.forEach(val => newData.push(val))
+                setAllDataPost((oldData) => [...oldData, ...newData]);
+                setOffset(offset + 1);
+                console.log("combine data", [...allDataPost, ...res.data])
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const countPostData = async () => {
         try {
             let res = await axios.get(API_URL + `/post/countdata`);
-            setCountData(res.data)
+            //console.log("post",res.data)
+            setCountData(res.data);
+
+            let search = [];
+            res.data.forEach((val, idx) => {
+                if (val.post_user_id == idusers) {
+                    search.push(val);
+                }
+            })
+            setCountOwnPost(search);
+
         } catch (error) {
-            console.log(error)
+            console.log("error count post data", error)
         }
     };
 
@@ -105,11 +122,14 @@ const HomePage = (props) => {
                     status: "success",
                     isClosable: true
                 });
-                getAllPostData();
+                countPostData();
                 setPreviewPost("");
                 setInputPostCaption("");
+                setOffset(1);
+                getAllPostData();
             }
         } catch (error) {
+            console.log("error add post", error)
             toast({
                 title: "Insert a Picture",
                 position: 'top',
@@ -122,6 +142,7 @@ const HomePage = (props) => {
     const deletePost = async (post_id) => {
         try {
             let res = await axios.delete(API_URL + "/post/delete/" + post_id);
+
             if (res.data.success) {
                 console.log("item deleted");
                 toast({
@@ -131,12 +152,15 @@ const HomePage = (props) => {
                     duration: 5000,
                     isClosable: true
                 });
-                getAllPostData();
+                countPostData();
                 setSelectedData(null);
                 setToggleDelete(!toggleDelete);
-            };
+                setOffset(1);
+                console.log("reset", offset);
+                getAllPostData();
+            }
         } catch (error) {
-            console.log(error)
+            console.log("error delete post", error)
         }
     };
 
@@ -204,8 +228,7 @@ const HomePage = (props) => {
                         </div>
                     </div>
                     <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
-                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }}
-                            onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)} />
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
                     </div>
                     <div className="border-2 border-top-0 rounded-bottom">
                         <div className="p-2">
@@ -241,7 +264,7 @@ const HomePage = (props) => {
                                 <span className="text-center fs-5 fw-bold">Menu</span>
                                 <div className="d-flex flex-column">
                                     <button className="btn btn-color-231 mt-1">
-                                        <div className="py-2 row m-0 fs-5" onClick={() => navigate("/home")}>
+                                        <div className="py-2 row m-0 fs-5" onClick={() => { navigate("/home") }}>
                                             <span className="col-5 material-icons align-self-center text-end">home</span>
                                             <span className="col-7 text-start">Home</span>
                                         </div>
@@ -252,7 +275,7 @@ const HomePage = (props) => {
                                             <span className="col-7 text-start color-231">Message</span>
                                         </div>
                                     </button>
-                                    <button className="btn btn-color-eee" onClick={() => navigate("/profile")}>
+                                    <button className="btn btn-color-eee" onClick={() => { navigate("/profile") }}>
                                         <div className="py-2 row m-0 fs-5">
                                             <span className="col-5 material-icons align-self-center text-end color-231">assignment_ind</span>
                                             <span className="col-7 text-start color-231">Profile</span>
@@ -283,7 +306,7 @@ const HomePage = (props) => {
                                             </div>
                                     }
                                     <div className="d-flex justify-content-between">
-                                        <span>0 Post</span>
+                                        <span>{countOwnPost.length} Post</span>
                                         <span>0 Followers</span>
                                         <span>0 Following</span>
                                     </div>
@@ -301,7 +324,8 @@ const HomePage = (props) => {
                                     </div>
                                     :
                                     <>
-                                        <div className="border-2 rounded-3 p-2 my-2" style={{ borderColor: "#006442" }}>
+                                        <div className="border-2 rounded-3 p-2 my-2"
+                                            style={{ borderColor: "#006442" }}>
                                             <div>
                                                 <span>The more you share, the more you have...</span>
                                             </div>
@@ -331,7 +355,24 @@ const HomePage = (props) => {
                                             </div>
                                         </div>
                                         <div className="row">
-                                            {printPosts()}
+                                            <InfiniteScroll
+                                                dataLength={allDataPost.length}
+                                                next={() => {
+                                                    setTimeout(() => {
+                                                        moreData()
+                                                    }, 2000)
+                                                }}
+                                                hasMore={true}
+                                                loader={
+                                                    countData.length == allDataPost.length ?
+                                                        ""
+                                                        :
+                                                        <div className="d-flex justify-content-center">
+                                                            <div className="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                                        </div>
+                                                }>
+                                                {printPosts()}
+                                            </InfiniteScroll>
                                         </div>
                                         <div className="text-center py-2">
                                             {

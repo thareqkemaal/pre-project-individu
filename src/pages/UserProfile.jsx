@@ -20,6 +20,7 @@ const UserProfilePage = (props) => {
     const [toggleOpen, setToggleOpen] = React.useState(false);
     const [toggleDelete, setToggleDelete] = React.useState(false);
     const [selectedData, setSelectedData] = React.useState(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
     const [showLike, setShowLike] = React.useState("");
 
@@ -29,36 +30,40 @@ const UserProfilePage = (props) => {
     React.useEffect(() => {
         getOwnPostData();
         getLikedPostData();
+        setTimeout(() => {
+            setIsLoading(false)
+        }, 2000)
     }, []);
 
-    const getOwnPostData = async () => {
-        try {
-            let user = localStorage.getItem("activeUser")
-            let res = await axios.get(API_URL + "/post/ownpost", {
-                headers: {
-                    'Authorization': `Bearer ${user}`
-                }
-            });
+    const getOwnPostData = () => {
+        let user = localStorage.getItem("activeUser")
+        axios.get(API_URL + "/post/ownpost", {
+            headers: {
+                'Authorization': `Bearer ${user}`
+            }
+        }).then(res => {
             console.log("own post", res.data)
             setOwnPost(res.data.reverse())
-        } catch (error) {
-            console.log(error)
-        }
+        }).catch(err => {
+            console.log(err)
+        })
     };
 
-    const getLikedPostData = async () => {
-        try {
-            let user = localStorage.getItem("activeUser")
-            let res = await axios.get(API_URL + "/post/likedpost", {
-                headers: {
-                    'Authorization': `Bearer ${user}`
+    const getLikedPostData = () => {
+        let user = localStorage.getItem("activeUser")
+        axios.get(API_URL + "/post/likedpost", {
+            headers: {
+                'Authorization': `Bearer ${user}`
+            }
+        })
+            .then(res => {
+                if (res.data.length > 0) {
+                    console.log("liked post", res.data)
+                    setLikedPost(res.data.reverse())
                 }
-            });
-            console.log("liked post", res.data)
-            setLikedPost(res.data.reverse())
-        } catch (error) {
-            console.log(error)
-        }
+            }).catch(err => {
+                console.log(err)
+            })
     };
 
     const { idusers, username, status, fullname, user_bio, user_profileimage, liked } = useSelector(({ userReducer }) => {
@@ -108,7 +113,6 @@ const UserProfilePage = (props) => {
                 });
                 setSelectedData(null);
                 setToggleDelete(!toggleDelete);
-                window.location.reload();
             };
         } catch (error) {
             console.log(error)
@@ -176,9 +180,7 @@ const UserProfilePage = (props) => {
                         </div>
                     </div>
                     <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
-                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }}
-                            onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}
-                        />
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
                     </div>
                     <div className="border-2 border-top-0 rounded-bottom">
                         <div className="p-2">
@@ -263,9 +265,7 @@ const UserProfilePage = (props) => {
                         </div>
                     </div>
                     <div className="border-2 border-top-0 border-bottom-0 w-100 d-flex justify-content-center">
-                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }}
-                            onClick={() => navigate(`/postdetail/${val.post_username}/${val.idpost}`)}
-                        />
+                        <img src={API_URL + val.post_image} style={{ maxHeight: "360px" }} />
                     </div>
                     <div className="border-2 border-top-0 rounded-bottom">
                         <div className="p-2">
@@ -302,7 +302,7 @@ const UserProfilePage = (props) => {
                                     <span className="text-center fs-5 fw-bold">Menu</span>
                                     <div className="d-flex flex-column">
                                         <button className="btn btn-color-eee mt-1">
-                                            <div className="py-2 row m-0 fs-5" onClick={() => navigate("/home")}>
+                                            <div className="py-2 row m-0 fs-5" onClick={() => {navigate("/home")}}>
                                                 <span className="col-5 material-icons align-self-center text-end">home</span>
                                                 <span className="col-7 text-start">Home</span>
                                             </div>
@@ -313,7 +313,7 @@ const UserProfilePage = (props) => {
                                                 <span className="col-7 text-start color-231">Message</span>
                                             </div>
                                         </button>
-                                        <button className="btn btn-color-231" onClick={() => navigate("/profile")}>
+                                        <button className="btn btn-color-231">
                                             <div className="py-2 row m-0 fs-5">
                                                 <span className="col-5 material-icons align-self-center text-end">assignment_ind</span>
                                                 <span className="col-7 text-start">Profile</span>
@@ -325,71 +325,80 @@ const UserProfilePage = (props) => {
                             <div className="col-3">{/* blank */}</div>
                             {/*Middle*/}
                             <div className="col-6">
-                                <div className="p-2 pb-3 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
-                                    <div className="d-flex justify-content-end my-2" style={{ position: "absolute", left: "66%" }}>
-                                        {
-                                            status == "unverified" ?
-                                                "" :
-                                                <button type="button" className="btn btn-color-231 d-flex align-items-center" onClick={() => navigate("/editprofile")}>
-                                                    <span className="material-icons align-self-center text-end">settings</span>
-                                                    <span className="ms-2">Settings</span>
-                                                </button>
-                                        }
-                                    </div>
-                                    <div className="d-flex justify-content-center p-3">
-                                        {
-                                            user_profileimage == "" || user_profileimage == null ?
-                                                <img className="rounded-circle p-2" src={placeholder}
-                                                    style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
-                                                :
-                                                <img className="rounded-circle p-2" src={API_URL + user_profileimage}
-                                                    style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
-                                        }
-                                    </div>
-                                    <div className="fw-bold fs-4 text-center">
-                                        {fullname ? fullname : "USER FULLNAME"}
-                                    </div>
-                                    <div className="fs-5 text-center my-2">
-                                        <a className="fw-bold ">@{username}</a><br />
-                                        <span className="text-muted" style={{ fontSize: "15px" }}>{status === "unverified" ? "(unverified)" : ""}</span>
-                                    </div>
-                                    <div className={status == "unverified" ? "d-flex justify-content-center" : "d-none"}>
-                                        <button type="button" className="btn btn-warning" onClick={getVerify}>VERIFY YOUR EMAIL</button>
-                                        <Modal isOpen={toggleOpen} isCentered>
-                                            <ModalOverlay />
-                                            <ModalContent>
-                                                <ModalHeader className="text-center fw-bold fs-3 color-231">Verification link has been sent</ModalHeader>
-                                                <ModalBody className="d-flex flex-column align-items-center">
-                                                    <img src={check} style={{ width: "150px" }} />
-                                                    <span className="fw-bold mt-3 fs-5 color-231">Please check your email</span>
-                                                </ModalBody>
-                                            </ModalContent>
-                                        </Modal>
-                                    </div>
-                                    <div className="fs-5 text-center my-2">
-                                        {user_bio ? user_bio : "USER BIO"}
-                                    </div>
+                                {
+                                    isLoading ?
+                                        <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+                                            <div className="lds-facebook"><div></div><div></div><div></div></div>
+                                        </div>
+                                        :
+                                        <>
+                                            <div className="p-2 pb-3 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
+                                                <div className="d-flex justify-content-end my-2" style={{ position: "absolute", left: "66%" }}>
+                                                    {
+                                                        status == "unverified" ?
+                                                            "" :
+                                                            <button type="button" className="btn btn-color-231 d-flex align-items-center" onClick={() => navigate("/editprofile")}>
+                                                                <span className="material-icons align-self-center text-end">settings</span>
+                                                                <span className="ms-2">Settings</span>
+                                                            </button>
+                                                    }
+                                                </div>
+                                                <div className="d-flex justify-content-center p-3">
+                                                    {
+                                                        user_profileimage == "" || user_profileimage == null ?
+                                                            <img className="rounded-circle p-2" src={placeholder}
+                                                                style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
+                                                            :
+                                                            <img className="rounded-circle p-2" src={API_URL + user_profileimage}
+                                                                style={{ height: "200px", width: "200px", border: "solid", borderColor: "#231f20" }} />
+                                                    }
+                                                </div>
+                                                <div className="fw-bold fs-4 text-center">
+                                                    {fullname ? fullname : "USER FULLNAME"}
+                                                </div>
+                                                <div className="fs-5 text-center my-2">
+                                                    <a className="fw-bold ">@{username}</a><br />
+                                                    <span className="text-muted" style={{ fontSize: "15px" }}>{status === "unverified" ? "(unverified)" : ""}</span>
+                                                </div>
+                                                <div className={status == "unverified" ? "d-flex justify-content-center" : "d-none"}>
+                                                    <button type="button" className="btn btn-warning" onClick={getVerify}>VERIFY YOUR EMAIL</button>
+                                                    <Modal isOpen={toggleOpen} isCentered>
+                                                        <ModalOverlay />
+                                                        <ModalContent>
+                                                            <ModalHeader className="text-center fw-bold fs-3 color-231">Verification link has been sent</ModalHeader>
+                                                            <ModalBody className="d-flex flex-column align-items-center">
+                                                                <img src={check} style={{ width: "150px" }} />
+                                                                <span className="fw-bold mt-3 fs-5 color-231">Please check your email</span>
+                                                            </ModalBody>
+                                                        </ModalContent>
+                                                    </Modal>
+                                                </div>
+                                                <div className="fs-5 text-center my-2">
+                                                    {user_bio ? user_bio : "USER BIO"}
+                                                </div>
 
-                                </div>
-                                <div className="pb-2 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
-                                    <button className={showLike == "true" ? "w-50 py-2 btn-white color-231" : "w-50 py-2 btn-color-231"} onClick={() => setShowLike("")}>{username} Post</button>
-                                    <button className={showLike == "true" ? "w-50 py-2 btn-color-231" : "w-50 py-2 btn-white color-231"} onClick={() => setShowLike("true")}>Liked Post</button>
-                                </div>
-                                <div>
-                                    {
-                                        status === "verified" ?
-                                            showLike == "true" ?
-                                                <div>
-                                                    {printLikedPosts()}
-                                                </div>
-                                                :
-                                                <div>
-                                                    {printOwnPosts()}
-                                                </div>
-                                            :
-                                            ""
-                                    }
-                                </div>
+                                            </div>
+                                            <div className="pb-2 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
+                                                <button className={showLike == "true" ? "w-50 py-2 btn-white color-231" : "w-50 py-2 btn-color-231"} onClick={() => setShowLike("")}>{username} Post</button>
+                                                <button className={showLike == "true" ? "w-50 py-2 btn-color-231" : "w-50 py-2 btn-white color-231"} onClick={() => setShowLike("true")}>Liked Post</button>
+                                            </div>
+                                            <div>
+                                                {
+                                                    status === "verified" ?
+                                                        showLike == "true" ?
+                                                            <div>
+                                                                {printLikedPosts()}
+                                                            </div>
+                                                            :
+                                                            <div>
+                                                                {printOwnPosts()}
+                                                            </div>
+                                                        :
+                                                        ""
+                                                }
+                                            </div>
+                                        </>
+                                }
                             </div>
                             {/*Right*/}
                             <div className="col-3 px-3 bg-color-eee" style={ownPost.length > 0 || liked.length > 0 ? {} : { height: "100vh" }}>

@@ -48,7 +48,7 @@ const Navbar = (props) => {
         <div className="w-100 " style={{ position: "fixed", zIndex: "3" }}>
             <div className="row m-0 w-100 py-2 px-5 bg-color-eee">
                 <div type="button" className="col-4 d-flex align-items-center"
-                    onClick={() => navigate("/home")}>
+                    onClick={() => {navigate("/home")}}>
                     <img src={mainlogo} style={{ maxWidth: "35px" }} />
                     <span className="fs-3 fw-bold ms-2 color-231 d-none d-sm-block">| GAZEBO</span>
                 </div>
