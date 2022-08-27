@@ -16,6 +16,7 @@ import {
 import { useToast } from '@chakra-ui/react';
 import placeholder from '../images/userplaceholder.jpg';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import lock from '../images/lock.png';
 
 const HomePage = (props) => {
     const [allDataPost, setAllDataPost] = React.useState([]);
@@ -50,7 +51,7 @@ const HomePage = (props) => {
 
     const getAllPostData = async () => {
         try {
-            let res = await axios.get(API_URL + `/post/5/0`)
+            let res = await axios.get(API_URL + `/post/get/5/0`)
 
             if (res.data.length > 0) {
                 console.log("get all post data", res.data)
@@ -319,7 +320,8 @@ const HomePage = (props) => {
                             {
                                 status == "unverified" ?
                                     <div className="d-flex justify-content-center align-items-center flex-column text-center" style={{ height: "90vh" }}>
-                                        <span className="fw-bold fs-1">! YOU NEED TO VERIFY TO SEE THE POST !</span>
+                                        <img src={lock} style={{ width: "200px" }} />
+                                        <span className="fw-bold fs-1">! You need to verify to use this feature !</span>
                                         <span>Go to your Profile, click Verify Button.</span>
                                     </div>
                                     :
@@ -388,77 +390,87 @@ const HomePage = (props) => {
                         {/*Right*/}
                         <div className="col-3 px-3 bg-color-eee" style={allDataPost.length > 0 ? {} : { height: "100vh" }}>
                             <div style={{ position: "fixed", width: "23%" }}>
-                                <div className="mt-2 ">
-                                    <div className="d-flex justify-content-between color-231">
-                                        <span className="text-center fw-bold">Suggestion For You</span>
-                                        <span className="text-muted fw-bold">see all</span>
-                                    </div>
-                                    <div id="suggestion" className="mt-3 pb-4"
-                                        style={{ borderBottom: "solid", borderColor: "#231f20" }}>
-                                        <div className="d-flex align-items-center justify-content-between">
-                                            <div className="d-flex align-items-center">
-                                                <div>
-                                                    <img className="rounded-circle" src={placeholder} style={{ width: "50px", border: "solid 3px #231f20" }} />
+                                {
+                                    status === "unverified" ?
+                                        <div className="d-flex justify-content-center align-items-center flex-column text-center" style={{ height: "90vh" }}>
+                                            <img src={lock} style={{ width: "75px" }} />
+                                            <span className="fw-bold fs-3">! You need to verify to use this feature !</span>
+                                        </div>
+                                        :
+                                        <>
+                                            <div className="mt-2">
+                                                <div className="d-flex justify-content-between color-231">
+                                                    <span className="text-center fw-bold">Suggestion For You</span>
+                                                    <span className="text-muted fw-bold">see all</span>
                                                 </div>
-                                                <div className="d-flex flex-column ms-2 color-231">
-                                                    <span className="fw-bold">User Fullname</span>
-                                                    <span className="text-muted">@username</span>
+                                                <div id="suggestion" className="mt-3 pb-4"
+                                                    style={{ borderBottom: "solid", borderColor: "#231f20" }}>
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <div>
+                                                                <img className="rounded-circle" src={placeholder} style={{ width: "50px", border: "solid 3px #231f20" }} />
+                                                            </div>
+                                                            <div className="d-flex flex-column ms-2 color-231">
+                                                                <span className="fw-bold">User Fullname</span>
+                                                                <span className="text-muted">@username</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <button className="btn btn-color-231 rounded-pill">Follow</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="my-2 d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <div>
+                                                                <img className="rounded-circle" src={placeholder} style={{ width: "50px", border: "solid 3px #231f20" }} />
+                                                            </div>
+                                                            <div className="d-flex flex-column ms-2 color-231">
+                                                                <span className="fw-bold">User Fullname</span>
+                                                                <span className="text-muted">@username</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <button className="btn btn-color-eee rounded-pill" style={{ border: "solid 2px #231f20" }}>Unfollow</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <div>
+                                                                <img className="rounded-circle" src={placeholder} style={{ width: "50px", border: "solid 3px #231f20" }} />
+                                                            </div>
+                                                            <div className="d-flex flex-column ms-2 color-231">
+                                                                <span className="fw-bold">User Fullname</span>
+                                                                <span className="text-muted">@username</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <button className="btn btn-color-231 rounded-pill">Follow</button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <button className="btn btn-color-231 rounded-pill">Follow</button>
-                                            </div>
-                                        </div>
-                                        <div className="my-2 d-flex align-items-center justify-content-between">
-                                            <div className="d-flex align-items-center">
-                                                <div>
-                                                    <img className="rounded-circle" src={placeholder} style={{ width: "50px", border: "solid 3px #231f20" }} />
+                                            <div className="mt-4">
+                                                <div className="d-flex justify-content-between color-231 mb-3">
+                                                    <span className="text-center fw-bold">Trending For You</span>
+                                                    <span className="text-muted fw-bold">see all</span>
                                                 </div>
-                                                <div className="d-flex flex-column ms-2 color-231">
-                                                    <span className="fw-bold">User Fullname</span>
-                                                    <span className="text-muted">@username</span>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <button className="btn btn-color-eee rounded-pill" style={{ border: "solid 2px #231f20" }}>Unfollow</button>
-                                            </div>
-                                        </div>
-                                        <div className="d-flex align-items-center justify-content-between">
-                                            <div className="d-flex align-items-center">
-                                                <div>
-                                                    <img className="rounded-circle" src={placeholder} style={{ width: "50px", border: "solid 3px #231f20" }} />
-                                                </div>
-                                                <div className="d-flex flex-column ms-2 color-231">
-                                                    <span className="fw-bold">User Fullname</span>
-                                                    <span className="text-muted">@username</span>
+                                                <div id="trending">
+                                                    <div className="d-flex flex-column">
+                                                        <span className="text-muted">trending worldwide</span>
+                                                        <span className="fw-bold">#LoremIpsum</span>
+                                                    </div>
+                                                    <div className="d-flex flex-column my-3">
+                                                        <span className="text-muted">trending worldwide</span>
+                                                        <span className="fw-bold">#LoremIpsum</span>
+                                                    </div>
+                                                    <div className="d-flex flex-column">
+                                                        <span className="text-muted">trending indonesia</span>
+                                                        <span className="fw-bold">#LoremIpsum</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <button className="btn btn-color-231 rounded-pill">Follow</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="d-flex justify-content-between color-231 mb-3">
-                                        <span className="text-center fw-bold">Trending For You</span>
-                                        <span className="text-muted fw-bold">see all</span>
-                                    </div>
-                                    <div id="trending">
-                                        <div className="d-flex flex-column">
-                                            <span className="text-muted">trending worldwide</span>
-                                            <span className="fw-bold">#LoremIpsum</span>
-                                        </div>
-                                        <div className="d-flex flex-column my-3">
-                                            <span className="text-muted">trending worldwide</span>
-                                            <span className="fw-bold">#LoremIpsum</span>
-                                        </div>
-                                        <div className="d-flex flex-column">
-                                            <span className="text-muted">trending indonesia</span>
-                                            <span className="fw-bold">#LoremIpsum</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                        </>
+                                }
                             </div>
                         </div>
                     </div>

@@ -93,6 +93,7 @@ const RegisterPage = (props) => {
             if (dataUsers.length > 0) {
                 let newUser = "";
                 let newEmail = "";
+                let check = [];
 
                 dataUsers.forEach((val, idx) => {
                     if (val.username === inputUser) {
@@ -103,9 +104,22 @@ const RegisterPage = (props) => {
                             setCheckUsername("");
                         }, 3000);
                         setInputUser("");
+                        check.push(false)
                     } else {
-                        newUser = inputUser;
-                        console.log(newUser);
+                        if (inputUser.length < 6) {
+                            setCheckUsername("Username should have min. 6 characters");
+                            setPassword("");
+                            setRepeatPassword("");
+                            setTimeout(() => {
+                                setCheckUsername("");
+                            }, 3000);
+                            setInputUser("");
+                            check.push(false)
+                        } else {
+                            newUser = inputUser;
+                            console.log(newUser);
+                            check.push(true)
+                        }
                     }
 
                     if (validateEmail(inputEmail)) {
@@ -117,29 +131,35 @@ const RegisterPage = (props) => {
                                 setCheckEmail("");
                             }, 3000);
                             setInputEmail("");
+                            check.push(false)
                         } else {
                             newEmail = inputEmail;
                             console.log(newEmail);
+                            check.push(true)
                         }
                     } else {
+                        setCheckEmail("Enter a Valid Email");
+                        setPassword("");
+                        setRepeatPassword("");
                         setTimeout(() => {
-                            setCheckEmail("Enter a Valid Email");
+                            setCheckEmail("");
                         }, 3000)
                         setInputEmail("");
+                        check.push(false)
                     }
                 })
 
-                //console.log("combine", newUser, newEmail, password);
+                // console.log("check", check);
+                // console.log("includes false", check.includes(false));
+                // console.log("includes false reverse", !check.includes(false));
 
-                if (newUser != "" && newEmail != "" && password != "") {
-                    if (password == repeatPassword) {
+                if (!check.includes(false)) {
+                    if (password === repeatPassword) {
                         let inputNewUser = {
                             username: newUser,
                             email: newEmail,
                             password: password
                         };
-
-                        //console.log(inputNewUser);
 
                         setToggleDisable(true);
                         setToggleSpinner(true);
@@ -154,6 +174,8 @@ const RegisterPage = (props) => {
                             }, 5000);
                         }
                     } else {
+                        setPassword("");
+                        setRepeatPassword("");
                         toast({
                             description: "Password not Match",
                             status: "error",
@@ -165,11 +187,23 @@ const RegisterPage = (props) => {
                 }
             } else {
                 if (inputUser != "" && inputEmail != "" && password != "") {
-                    let newUser = inputUser;
+                    let newUser = "";
                     let newEmail = "";
 
+                    if (inputUser.length < 6) {
+                        setCheckUsername("Username should have min. 6 characters");
+                        setPassword("");
+                        setRepeatPassword("");
+                        setTimeout(() => {
+                            setCheckUsername("");
+                        }, 3000);
+                        setInputUser("");
+                    } else {
+                        newUser = inputUser;
+                    }
+
                     if (validateEmail(inputEmail)) {
-                        newEmail = inputEmail
+                        newEmail = inputEmail;
                     } else {
                         setCheckEmail("Input a Valid Email");
                         setPassword("");
@@ -203,6 +237,8 @@ const RegisterPage = (props) => {
                                 }, 5000);
                             }
                         } else {
+                            setPassword("");
+                            setRepeatPassword("");
                             toast({
                                 description: "Password not Match",
                                 status: "error",
@@ -257,7 +293,8 @@ const RegisterPage = (props) => {
                                                             type="text"
                                                             placeholder="Username"
                                                             onChange={(e) => setInputUser(e.target.value)}
-                                                            value={inputUser}>
+                                                            value={inputUser}
+                                                            minLength={6}>
                                                         </input>
                                                     </div>
                                                 </div>

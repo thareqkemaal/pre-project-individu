@@ -67,7 +67,7 @@ const PostDetailPage = (props) => {
             console.log("get detail post", res.data);
             setPostDetail(res.data);
         } catch (error) {
-            console.log("error getPostDetail",error)
+            console.log("error getPostDetail", error)
         }
     };
 
@@ -78,7 +78,7 @@ const PostDetailPage = (props) => {
             console.log("get like", res.data);
             setPostLike(res.data);
         } catch (error) {
-            console.log("error getLikedata",error)
+            console.log("error getLikedata", error)
         }
     };
 
@@ -99,7 +99,7 @@ const PostDetailPage = (props) => {
                 setShowBtn("");
             }
         } catch (error) {
-            console.log("error check like",error)
+            console.log("error check like", error)
         }
     };
 
@@ -122,7 +122,7 @@ const PostDetailPage = (props) => {
                 getLike();
             }
         } catch (error) {
-            console.log("error addlike",error)
+            console.log("error addlike", error)
         }
     };
 
@@ -144,7 +144,7 @@ const PostDetailPage = (props) => {
                 getLike();
             }
         } catch (error) {
-            console.log("error delete like",error)
+            console.log("error delete like", error)
         }
     };
 
@@ -165,13 +165,8 @@ const PostDetailPage = (props) => {
                 setPostComment([...res.data]);
             }
         } catch (error) {
-            console.log("error getcomment",error)
+            console.log("error getcomment", error)
         }
-    };
-
-    const handleComment = () => {
-        setOffset(offset + 5);
-        getComment(offset);
     };
 
     const countComments = async () => {
@@ -180,7 +175,7 @@ const PostDetailPage = (props) => {
             //console.log("count", res.data);
             setCountComm(res.data);
         } catch (error) {
-            console.log("error count comment",error)
+            console.log("error count comment", error)
         }
     };
 
@@ -203,7 +198,7 @@ const PostDetailPage = (props) => {
                 setOffset(0);
             }
         } catch (error) {
-            console.log("error add comment",error)
+            console.log("error add comment", error)
         }
     };
 
@@ -239,6 +234,13 @@ const PostDetailPage = (props) => {
             if (res.data.success) {
                 setShowEdit("");
                 getPost();
+                toast({
+                    description: "Caption Edited",
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right"
+                })
             }
         } catch (error) {
             console.log("error edit caption", error)
@@ -259,10 +261,10 @@ const PostDetailPage = (props) => {
                 });
                 setSelectedData(null);
                 setToggleDelete(!toggleDelete);
-                navigate("/home", {replace: true})
+                navigate("/home", { replace: true })
             };
         } catch (error) {
-            console.log("error delete post",error)
+            console.log("error delete post", error)
         }
     };
 
@@ -278,7 +280,7 @@ const PostDetailPage = (props) => {
                                 <span className="text-center fs-5 fw-bold">Post Detail</span>
                                 <div className="d-flex flex-column">
                                     <button className="btn btn-color-231 mt-1">
-                                        <div className="py-2 row m-0 fs-5" onClick={() => {navigate("/home")}}>
+                                        <div className="py-2 row m-0 fs-5" onClick={() => { navigate("/home") }}>
                                             <span className="col-5 material-icons align-self-center text-end">arrow_back</span>
                                             <span className="col-7 text-start">Back</span>
                                         </div>
@@ -426,7 +428,10 @@ const PostDetailPage = (props) => {
                                                         countComm.length == postComment.length ?
                                                             <span>Yay you've seen it all</span>
                                                             :
-                                                            <button onClick={handleComment}>see more</button>
+                                                            <button onClick={() => {
+                                                                setOffset(offset + 5);
+                                                                getComment(offset);
+                                                            }}>see more</button>
                                                     }
                                                 </div>
                                             }

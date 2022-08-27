@@ -11,6 +11,7 @@ import axios from "axios";
 import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay, ModalFooter } from "@chakra-ui/react";
 import { Button, ButtonGroup, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react';
+import lock from '../images/lock.png';
 
 
 const UserProfilePage = (props) => {
@@ -302,7 +303,7 @@ const UserProfilePage = (props) => {
                                     <span className="text-center fs-5 fw-bold">Menu</span>
                                     <div className="d-flex flex-column">
                                         <button className="btn btn-color-eee mt-1">
-                                            <div className="py-2 row m-0 fs-5" onClick={() => {navigate("/home")}}>
+                                            <div className="py-2 row m-0 fs-5" onClick={() => { navigate("/home") }}>
                                                 <span className="col-5 material-icons align-self-center text-end">home</span>
                                                 <span className="col-7 text-start">Home</span>
                                             </div>
@@ -354,7 +355,7 @@ const UserProfilePage = (props) => {
                                                     }
                                                 </div>
                                                 <div className="fw-bold fs-4 text-center">
-                                                    {fullname ? fullname : "USER FULLNAME"}
+                                                    {fullname ? fullname : ""}
                                                 </div>
                                                 <div className="fs-5 text-center my-2">
                                                     <a className="fw-bold ">@{username}</a><br />
@@ -374,35 +375,50 @@ const UserProfilePage = (props) => {
                                                     </Modal>
                                                 </div>
                                                 <div className="fs-5 text-center my-2">
-                                                    {user_bio ? user_bio : "USER BIO"}
+                                                    {user_bio ? user_bio : ""}
                                                 </div>
 
                                             </div>
-                                            <div className="pb-2 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
-                                                <button className={showLike == "true" ? "w-50 py-2 btn-white color-231" : "w-50 py-2 btn-color-231"} onClick={() => setShowLike("")}>{username} Post</button>
-                                                <button className={showLike == "true" ? "w-50 py-2 btn-color-231" : "w-50 py-2 btn-white color-231"} onClick={() => setShowLike("true")}>Liked Post</button>
-                                            </div>
-                                            <div>
-                                                {
-                                                    status === "verified" ?
-                                                        showLike == "true" ?
-                                                            <div>
-                                                                {printLikedPosts()}
-                                                            </div>
-                                                            :
-                                                            <div>
-                                                                {printOwnPosts()}
-                                                            </div>
-                                                        :
-                                                        ""
-                                                }
-                                            </div>
+                                            {
+                                                status === "unverified" ?
+                                                    ""
+                                                    :
+                                                    <>
+                                                        <div className="pb-2 mb-2" style={{ borderBottom: "solid", borderColor: "#231f20" }}>
+                                                            <button className={showLike == "true" ? "w-50 py-2 btn-white color-231" : "w-50 py-2 btn-color-231"} onClick={() => setShowLike("")}>{username} Post</button>
+                                                            <button className={showLike == "true" ? "w-50 py-2 btn-color-231" : "w-50 py-2 btn-white color-231"} onClick={() => setShowLike("true")}>Liked Post</button>
+                                                        </div>
+                                                        <div>
+                                                            {
+                                                                status === "verified" ?
+                                                                    showLike == "true" ?
+                                                                        <div>
+                                                                            {printLikedPosts()}
+                                                                        </div>
+                                                                        :
+                                                                        <div>
+                                                                            {printOwnPosts()}
+                                                                        </div>
+                                                                    :
+                                                                    ""
+                                                            }
+                                                        </div>
+                                                    </>
+                                            }
                                         </>
                                 }
                             </div>
                             {/*Right*/}
                             <div className="col-3 px-3 bg-color-eee" style={ownPost.length > 0 || liked.length > 0 ? {} : { height: "100vh" }}>
                                 <div style={{ position: "fixed", width: "23%" }}>
+                                {
+                                    status === "unverified" ?
+                                    <div className="d-flex justify-content-center align-items-center flex-column text-center" style={{ height: "90vh" }}>
+                                        <img src={lock} style={{width: "75px"}}/>
+                                        <span className="fw-bold fs-3">! You need to verify to use this feature !</span>
+                                    </div>
+                                    :
+                                    <>
                                     <div className="mt-2">
                                         <div className="d-flex justify-content-between color-231">
                                             <span className="text-center fw-bold">Suggestion For You</span>
@@ -474,6 +490,8 @@ const UserProfilePage = (props) => {
                                             </div>
                                         </div>
                                     </div>
+                                    </>
+                                }
                                 </div>
                             </div>
                         </div>
