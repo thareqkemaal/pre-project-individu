@@ -229,12 +229,10 @@ const RegisterPage = (props) => {
                             let res = await axios.post(API_URL + "/auth/register", inputNewUser);
                             console.log('response api', res.data);
                             if (res.data.success) {
-                                setTimeout(() => {
-                                    setToggleOpen(true);
-                                }, 3000);
+                                setToggleOpen(true);
                                 setTimeout(() => {
                                     navigate("/login", { replace: true });
-                                }, 5000);
+                                }, 4000);
                             }
                         } else {
                             setPassword("");
